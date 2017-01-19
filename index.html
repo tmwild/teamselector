@@ -1,15 +1,261 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Team Selector - Randomly pick your five a side teams</title>
-	<link rel="stylesheet" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Team Selector - Randomly pick your five a side teams</title>
+    <link href="https://fonts.googleapis.com/css?family=Graduate" rel="stylesheet">
+
+    <style type="text/css">
+        
+        body {
+            background: #111;
+            font-family: sans-serif;
+        }
+
+        header,
+        div,
+        button,
+        input {
+            box-sizing: border-box;
+        }
+
+        h1,
+        h3,
+        h5,
+        .btn,
+        li {
+            font-family: 'Graduate', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 1.6em;
+            color: #fff;
+            margin: 20px 0px 0px;
+        }
+
+        h5 {
+            margin: 0 0 5px;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        h5 > span {
+            font-family: sans-serif;
+            font-weight: normal;
+            float: right;
+            text-decoration: underline;
+            text-transform: none;
+        }
+
+        p {
+            color: #999;
+            margin: 0 0 10px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin: 0;
+        }
+
+        header {
+            max-width: 300px;
+            width: 95%;
+            margin: 0 auto;
+        }
+
+        .content {
+            background: #fff;
+            padding: 15px;
+            max-width: 300px;
+            width: 95%;
+            margin: 0 auto;
+        }
+
+        .players,
+        .results {
+            background: #fff;
+            height: 100%;
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            width: 100%;
+        }
+
+        .player {
+            display: block;
+            padding: 5px;
+            margin: 0 0 5px;
+            width: 100%;
+        }
+
+        .results {
+            max-height: 0;
+        }
+
+        .btn {
+            background: #005b7b;
+            border: 0;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+        }
+
+    </style>
 </head>
 <body>
-	<h1>Team Selector</h1>
-	<p>Randomly pick your five a side teams.</p>
 
+    <header>
+        <h1>Team Selector</h1>
+        <p>Randomly pick your five a side teams.</p>
+    </header>
+
+    <div class="content">
+        <div class="players" id="players">
+
+            <h5 id="players-heading">Players <span id="players-edit"></span></h5>
+            
+            <input type="text" name="player1" class="player" placeholder="player name" />
+            <input type="text" name="player2" class="player" placeholder="player name" />
+            <input type="text" name="player3" class="player" placeholder="player name" />
+            <input type="text" name="player4" class="player" placeholder="player name" />
+            <input type="text" name="player5" class="player" placeholder="player name" />
+            <input type="text" name="player6" class="player" placeholder="player name" />
+            <input type="text" name="player7" class="player" placeholder="player name" />
+            <input type="text" name="player8" class="player" placeholder="player name" />
+            <input type="text" name="player9" class="player" placeholder="player name" />
+            <input type="text" name="player10" class="player" placeholder="player name" />
+
+            <button id="choose-teams" class="btn">Choose Teams!</button>
+
+            </form>
+        </div>
+
+        <div class="results" id="results">
+
+            <h5>Teams <span id="results-refresh"></span></h5>
+
+            <h3>Team 1</h3>
+            <ol id="teamOne">
+                
+            </ol>
+
+            <h3>Team 2</h3>
+            <ol id="teamTwo">
+                
+            </ol>
+        </div>
+    </div>
+
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+<script type="text/javascript">
+
+var TeamSelector = (function () {
+
+    var _shuffle = function (arr) {
+
+        var currentIndex = arr.length,
+            temporaryValue,
+            randomIndex;
+
+      while (0 !== currentIndex) {
+
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        temporaryValue = arr[currentIndex];
+        arr[currentIndex] = arr[randomIndex];
+        arr[randomIndex] = temporaryValue;
+      }
+
+      return arr;
+    };
+
+    var updateResults = function () {
+
+        var players,
+            playerNames = [],
+            playerIndex,
+            listItem,
+            teamOne = [],
+            teamTwo = [];
+
+        document.getElementById('teamOne').innerHTML = '';
+        document.getElementById('teamTwo').innerHTML = '';
+
+        players = document.querySelectorAll('.player');
+
+        for (playerIndex = 0; playerIndex < players.length; playerIndex += 1) {
+            playerNames.push(players[playerIndex].value);
+        }
+
+        _shuffle(playerNames);
+
+        for (playerIndex = 0; playerIndex < playerNames.length; playerIndex += 1) {
+            listItem = document.createElement('li');
+            listItem.innerHTML = playerNames[playerIndex];
+
+            if (playerIndex < (playerNames.length / 2)) {
+                document.getElementById('teamOne').appendChild(listItem);
+            } else {
+                document.getElementById('teamTwo').appendChild(listItem);
+            }
+        }
+
+        document.getElementById('players').style.maxHeight = '30px';
+        document.getElementById('results').style.maxHeight = '500px';
+    };
+
+
+    var init = function () {
+
+        var btn = document.getElementById('choose-teams');
+        var refresh = document.getElementById('results-refresh');
+        var edit = document.getElementById('players-edit');
+        var playersHeading = document.getElementById('players-heading');
+
+
+        btn.onclick = function (ev) {
+            ev.preventDefault();
+
+            refresh.innerHTML = 'Choose Again';
+            edit.innerHTML = 'Edit Players';
+            
+            updateResults();
+        };
+
+
+        refresh.onclick = function (ev) {
+            ev.preventDefault();
+
+            updateResults();
+        };
+
+
+        playersHeading.onclick = function (ev) {
+
+            edit.innerHTML = '';
+
+            document.getElementById('players').style.maxHeight = '500px';
+            document.getElementById('results').style.maxHeight = '0px';
+        }
+    };
+
+
+    return {
+        init: init,
+        updateResults: updateResults
+    };
+
+}());
+
+TeamSelector.init();
+
+</script>
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
