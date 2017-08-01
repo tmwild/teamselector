@@ -1,6 +1,7 @@
-import React from 'react'
-const fantasyData = require('../fantasyData'),
-    optimiser = require('../optimise');
+import React from 'react';
+
+const fantasyData = require('../fantasyData');
+const optimiser = require('../optimise');
 
 class Team extends React.Component {
 
@@ -21,84 +22,72 @@ class Team extends React.Component {
             'max3': 650,
             'max4': 400
         };
-    }
-
-    componentDidMount () {
 
         this.getPlayersByPosition();
-
-        let budget = {
-            1: this.pos1.value,
-            2: this.pos2.value,
-            3: this.pos3.value,
-            4: this.pos4.value,
-        };
-
-        let posPlayersStr,
-            posPlayers;
-
-        for (let i = 1; i <= 4; i += 1) {
-
-            if (this.playersByPosition[i][0] === 0) {
-                this.playersByPosition[i].shift();
-            }
-
-            posPlayers = this.optimisePosition(budget[i], this.playersByPosition[i], i);
-
-            posPlayers.forEach(player => {
-                posPlayersStr += '\r\n' + player.name;
-            });
-            
-            posPlayersStr += ' ///// ';
-
-            this.setState({
-                'positionPlayers': posPlayersStr
-            });
-            
-        }
     }
 
-    pickTeam = () => {
 
-        let budget = {
-            1: this.pos1.value,
-            2: this.pos2.value,
-            3: this.pos3.value,
-            4: this.pos4.value,
-        };
+    componentDidMount () {
+        /* choose team from default settings */
+        this.pickTeam();
+    };
+
+
+    setBudgets = () => {
+        let budget = this.getBudgets();
 
         for (var key in budget) {
             if (budget[key] < this.state['min'+key]) {
                 budget[key] = this.state['min'+key];
                 console.log('budget too low - auto adjusted');
             }
+            if (budget[key] > this.state['max'+key]) {
+                budget[key] = this.state['max'+key];
+                console.log('budget too high - auto adjusted');
+            }
         }
 
         this.setState({
-            'budget1': this.pos1.value,
-            'budget2': this.pos2.value,
-            'budget3': this.pos3.value,
-            'budget4': this.pos4.value
+            budget1: this.pos1.value,
+            budget2: this.pos2.value,
+            budget3: this.pos3.value,
+            budget4: this.pos4.value,
         });
+    };
 
-        let posPlayersStr,
+
+    getBudgets = () => {
+        return {
+            1: this.pos1.value,
+            2: this.pos2.value,
+            3: this.pos3.value,
+            4: this.pos4.value,
+        };
+    };
+
+
+    pickTeam = () => {
+
+        let budget = this.getBudgets();
+
+        let posPlayersStr = '',
             posPlayers,
             playersTotal = 0;
 
-        for (let i = 1; i <= 4; i += 1) {
+        for (let position = 1; position <= 4; position += 1) {
 
-            if (this.playersByPosition[i][0] === 0) {
-                this.playersByPosition[i].shift();
+            if (this.playersByPosition[position][0] === 0) {
+                this.playersByPosition[position].shift();
             }
 
-            posPlayers = this.optimisePosition(budget[i], this.playersByPosition[i], i);
+            posPlayers = optimiser(budget[position], this.playersByPosition[position], position);
 
             posPlayers.forEach(player => {
                 posPlayersStr += player.name + ' ';
                 playersTotal += player.points;
             });
 
-            posPlayersStr += ' ///// ';
+            posPlayersStr += ' // ';
 
             this.setState({
                 'positionPlayers': posPlayersStr,
@@ -106,7 +95,15 @@ class Team extends React.Component {
             });
             
         }
+
+        this.setState({
+            budget1: budget[1],
+            budget2: budget[2],
+            budget3: budget[3],
+            budget4: budget[4],
+        });
     };
+
 
     getPlayersByPosition = () => {
 
@@ -120,23 +117,20 @@ class Team extends React.Component {
                     3 : players.filter(function(p) {return p.position === 3}).sort(function(a,b){return b.points - a.points}),
                     4 : players.filter(function(p) {return p.position === 4}).sort(function(a,b){return b.points - a.points})
             };
+
         });
     };
 
-    optimisePosition = (budget, players, position) => {
-
-        return optimiser(budget, players, position);
-    }
 
     render() {
         return (
             <div>
                 <p>Your team..... {this.state.positionPlayers}</p>
 
-                <label>GK budget <input type="number" min="95" max="140" value={this.state.budget1} ref={(input) => { this.pos1 = input; }} onChange={this.pickTeam} /></label>
-                <label>DF budget <input type="number" min="225" max="400" value={this.state.budget2} ref={(input) => { this.pos2 = input; }} onChange={this.pickTeam} /></label>
-                <label>MF budget <input type="number" min="225" max="700" value={this.state.budget3} ref={(input) => { this.pos3 = input; }} onChange={this.pickTeam} /></label>
-                <label>FW budget <input type="number" min="135" max="420" value={this.state.budget4} ref={(input) => { this.pos4 = input; }} onChange={this.pickTeam} /></label>
+                <label>GK budget <input type="number" min="95" max="140" value={this.state.budget1} ref={(input) => { this.pos1 = input; }} onChange={this.setBudgets} onBlur={this.pickTeam} /></label>
+                <label>DF budget <input type="number" min="225" max="400" value={this.state.budget2} ref={(input) => { this.pos2 = input; }} onChange={this.setBudgets} onBlur={this.pickTeam} /></label>
+                <label>MF budget <input type="number" min="225" max="700" value={this.state.budget3} ref={(input) => { this.pos3 = input; }} onChange={this.setBudgets} onBlur={this.pickTeam} /></label>
+                <label>FW budget <input type="number" min="135" max="420" value={this.state.budget4} ref={(input) => { this.pos4 = input; }} onChange={this.setBudgets} onBlur={this.pickTeam} /></label>
 
                 <h4>Total: {this.state.totalPoints}</h4>
             </div>
